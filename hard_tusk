@@ -1,0 +1,82 @@
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+#include <algorithm>
+#include <cmath>
+#include <unordered_set>
+using namespace std;
+
+struct Equation {
+    int a, b, c;
+
+    bool operator==(const Equation& other) const {
+        return a == other.a && b == other.b && c == other.c;
+    }
+};
+
+namespace std {
+    template <>
+    struct hash<Equation> {
+        size_t operator()(const Equation& eq) const {
+            size_t hash_a = std::hash<int>{}(eq.a);
+            size_t hash_b = std::hash<int>{}(eq.b);
+            size_t hash_c = std::hash<int>{}(eq.c);
+
+            size_t combined_hash = (hash_a ^ hash_b) ^ hash_c;
+
+            // Ограничиваем хэш в пределах 100000
+            return combined_hash % 1000000;
+        }
+    };
+}
+void generate_equation_coefficients(int m, int n, unordered_set<Equation>& equations) {
+    int i = 0;
+    
+
+    for (int a = -m; a <= m; ++a) {
+        for (int b = -m; b <= m; ++b) {
+            for (int c = -m; c <= m; ++c) {
+                
+                int x1 = -a * (b + c);
+                int x2 = a * b * c;
+                    
+                if (b != c && x1 != 0 && x2 != 0 && (x1 <= m && x1 >= -m) && (x2 <= m && x2 >= -m)) {
+                    if (equations.find({ a, x1 ,x2 }) == equations.end()) {
+                        equations.insert({ a, x1 ,x2 });
+                        ++i;
+                        if (i == n) {
+                            return ;
+                        }
+                    }
+                }
+                
+            }
+        }
+    }
+}
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+
+    if (n == 0 || m == 0) {
+        cout << "NO" << endl;
+        return 0;
+    }
+
+    unordered_set<Equation> equations;
+    generate_equation_coefficients(m, n, equations);
+
+    if (equations.size() == n) {
+        cout << "YES" << endl;
+        for (const Equation& eq : equations) {
+            cout << eq.a << " " << eq.b << " " << eq.c << endl;
+        }
+    }
+    else {
+        cout << "NO" << endl;
+    }
+
+    return 0;
+}
